@@ -39,7 +39,7 @@ MFKlJFQQVqm5SF38OdPHU3MvWO6DmL+RPFr01jSFOFQ0lsUXBMGa9BzEqA==
 
             digest = sha.digest()  # 32-byte SHA-256
 
-            # Verify signature using PEM bytes (works as tested in console)
+            # Verify signature using public key
             valid = mbedtls.ec_key_verify(self.PUBLIC_KEY, digest, signature_bytes)
 
             if valid:
@@ -108,7 +108,7 @@ MFKlJFQQVqm5SF38OdPHU3MvWO6DmL+RPFr01jSFOFQ0lsUXBMGa9BzEqA==
     def _download_signature(self, filename):
         """Download .sig file"""
         try:
-            url = f"{self.repo_url}/{filename}.sig"
+            url = f"{self.repo_url}/signatures/{filename}.sig"
             res = urequests.get(url)
             if res.status_code == 200:
                 with open(f"tmp_{filename}.sig", "wb") as f:
@@ -128,7 +128,7 @@ MFKlJFQQVqm5SF38OdPHU3MvWO6DmL+RPFr01jSFOFQ0lsUXBMGa9BzEqA==
                 with open(tmp, "wb") as f:
                     while True:
                         chunk = res.raw.read(128)
-                        print("[OTA] Chunk: ", chunk)
+                        
                         if not chunk: break
                         f.write(chunk)
                 res.close()
