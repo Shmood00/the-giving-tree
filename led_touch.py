@@ -6,7 +6,7 @@ import machine
 import network
 from ota import OTAUpdater
 
-FILES_TO_UPDATE = ["main.py", "led_touch.py"]
+FILES_TO_UPDATE = ["main.py", "led_touch.py", "boot.py", "ota.py"]
 
 # --- CONFIG ---
 def load_config():
