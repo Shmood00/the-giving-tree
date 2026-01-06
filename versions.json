@@ -1,4 +1,6 @@
 {
   "main.py": 1.0,
-  "led_touch.py":1.0
+  "led_touch.py":1.0,
+  "ota.py":1.0,
+  "boot.py":1.0
 }
