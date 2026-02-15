@@ -1,12 +1,14 @@
 import machine
 import os
 import time
+import config_loader
 
 FLAG_FILE = ".reset_flag"
 WIFI_FILE = "wifi.dat"
 OTA_FLAG = ".ota_running"
 
-led = machine.Pin(33, machine.Pin.OUT)
+CONFIG = config_loader.get_config()
+led = machine.Pin(CONFIG.get('led_pin'), machine.Pin.OUT)
 
 # --- OTA BOOT ---
 if OTA_FLAG in os.listdir():
