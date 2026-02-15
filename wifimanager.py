@@ -9,8 +9,10 @@ import socket
 import re
 import time
 import _thread
+import config_loader
 
-green_led = machine.Pin(33, machine.Pin.OUT)
+CONFIG = config_loader.get_config()
+green_led = machine.Pin(CONFIG.get('led_pin'), machine.Pin.OUT)
 
 class WifiManager:
     def __init__(self, ssid='WifiManager', password='', reboot=True, debug=False):
