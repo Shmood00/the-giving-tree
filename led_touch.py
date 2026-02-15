@@ -5,50 +5,11 @@ import math, time, os, gc, json
 import machine
 import network
 from ota import OTAUpdater
+import config_loader
 
 FILES_TO_UPDATE = ["main.py", "led_touch.py", "boot.py", "ota.py"]
 
-# --- CONFIG ---
-def load_config():
-    # 1. Use stat instead of listdir to check existence (save heap)
-    try:
-        filename = "config.dat"
-        os.stat(filename)
-    except OSError:
-        filename = "config.json"
-
-    try:
-        # 2. Open and read once
-        with open(filename, "rb") as f:
-            data = f.read()
-        
-        # 3. Decrypt in-place if it's the encrypted file
-        if filename.endswith(".dat"):
-            key = machine.unique_id()
-            kl = len(key)
-            data = bytearray(data)
-            for i in range(len(data)):
-                data[i] ^= key[i % kl]
-            print("[System] Decrypted config.")
-
-        # 4. Load JSON directly from the bytearray
-        config = json.loads(data)
-        
-        # 5. Clean up
-        del data
-        gc.collect() 
-        return config
-
-    except Exception as e:
-        print("[System] Config Load Failed:", e)
-        # Return a minimal dictionary so the rest of the script doesn't crash
-        return {
-            "url": "", "user": "", "pass": "",
-            "sub_topics": [], "pub_topic": "touch",
-            "github_url": "", "touch_pin": 4, "led_pin": 2
-        }
-
-CONFIG = load_config()
+CONFIG = config_loader.get_config()
 TOPICS = CONFIG.get("sub_topics", [])
 GITHUB_URL = CONFIG.get("github_url", "")
 
