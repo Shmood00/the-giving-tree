@@ -10,38 +10,43 @@ FILES_TO_UPDATE = ["main.py", "led_touch.py", "boot.py", "ota.py"]
 
 # --- CONFIG ---
 def load_config():
-    def _decrypt(data):
-        key = machine.unique_id()
-        return bytes([data[i] ^ key[i % len(key)] for i in range(len(data))])
+    # 1. Use stat instead of listdir to check existence (save heap)
+    try:
+        filename = "config.dat"
+        os.stat(filename)
+    except OSError:
+        filename = "config.json"
 
-    if "config.dat" in os.listdir():
-        try:
-            with open("config.dat", "rb") as f:
-                raw = f.read()
-            decrypted = _decrypt(raw).decode()
-            print("[System] Loaded encrypted config.")
-            return json.loads(decrypted)
-        except Exception as e:
-            print("[System] Failed to decrypt config.dat:", e)
+    try:
+        # 2. Open and read once
+        with open(filename, "rb") as f:
+            data = f.read()
+        
+        # 3. Decrypt in-place if it's the encrypted file
+        if filename.endswith(".dat"):
+            key = machine.unique_id()
+            kl = len(key)
+            data = bytearray(data)
+            for i in range(len(data)):
+                data[i] ^= key[i % kl]
+            print("[System] Decrypted config.")
 
-    if "config.json" in os.listdir():
-        try:
-            print("[System] Loading plaintext config.json")
-            with open("config.json") as f:
-                return json.load(f)
-        except Exception as e:
-            print("[System] Failed to read config.json:", e)
+        # 4. Load JSON directly from the bytearray
+        config = json.loads(data)
+        
+        # 5. Clean up
+        del data
+        gc.collect() 
+        return config
 
-    print("[System] CRITICAL: No config found.")
-    return {
-        "url": "",
-        "user": "",
-        "pass": "",
-        "sub_topics": [],
-        "pub_topic": "touch",
-        "versions": {},
-        "github_url": ""
-    }
+    except Exception as e:
+        print("[System] Config Load Failed:", e)
+        # Return a minimal dictionary so the rest of the script doesn't crash
+        return {
+            "url": "", "user": "", "pass": "",
+            "sub_topics": [], "pub_topic": "touch",
+            "github_url": "", "touch_pin": 4, "led_pin": 2
+        }
 
 CONFIG = load_config()
 TOPICS = CONFIG.get("sub_topics", [])
@@ -151,8 +156,8 @@ async def listen():
         print("[OTA] WiFi not ready, skipping OTA.")
 
     # --- HARDWARE ---
-    touch = TouchPad(Pin(27))
-    led_pwm = PWM(Pin(33))
+    touch = TouchPad(CONFIG.get('touch_pin'))
+    led_pwm = PWM(CONFIG.get('led_pin'))
     led_pwm.freq(500)
     threshold = await calibrate_touch(touch)
 
