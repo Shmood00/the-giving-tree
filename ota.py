@@ -9,7 +9,6 @@ import mbedtls
 import uhashlib
 
 class OTAUpdater:
-    # HARDCODED PUBLIC KEY (PEM bytes, works in your console)
     PUBLIC_KEY = b'''-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8y87fJqQsbcq4ER/RlSO6vnx07CX
 MFKlJFQQVqm5SF38OdPHU3MvWO6DmL+RPFr01jSFOFQ0lsUXBMGa9BzEqA==
